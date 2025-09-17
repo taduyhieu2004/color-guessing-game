@@ -209,3 +209,4 @@ public class User {
                            id, username, fullName, rankingPoints, status);
     }
 }
+

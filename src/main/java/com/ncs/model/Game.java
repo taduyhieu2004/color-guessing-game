@@ -303,3 +303,4 @@ public class Game {
                            id, player1Id, player2Id, getScoreDisplay(), gameStatus, currentRound, maxRounds);
     }
 }
+

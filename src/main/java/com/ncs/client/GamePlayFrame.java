@@ -18,23 +18,34 @@ import java.util.Map;
 
 public class GamePlayFrame extends JFrame implements MessageHandler.GameEventListener {
 	private final GameClient gameClient;
+	private final MainFrame mainFrame;
 	private final JPanel colorPanel = new JPanel(new GridLayout(1, 3, 8, 8));
 	private final JPanel palettePanel = new JPanel(new GridLayout(3, 6, 6, 6));
 	private final JLabel infoLabel = new JLabel("Chuẩn bị...");
 	private final JButton submitButton = new JButton("Nộp bài");
+	private final JButton leaveButton = new JButton("Rời trận");
+	private final JButton rematchButton = new JButton("Yêu cầu chơi lại");
+	private final JButton backButton = new JButton("Về màn chính");
 	private final List<GameColor> currentTargets = new ArrayList<>();
 	private final List<GameColor> currentGuess = new ArrayList<>();
 	private int roundNumber = 1;
 	private Timer phaseTimer;
+	private boolean gameEnded = false;
 
-	public GamePlayFrame(GameClient gameClient) {
+	public GamePlayFrame(GameClient gameClient, MainFrame mainFrame) {
 		super("Color Guessing Game - Play");
 		this.gameClient = gameClient;
+		this.mainFrame = mainFrame;
 		this.gameClient.getMessageHandler().setGameEventListener(this);
 		setSize(800, 600);
 		setLayout(new BorderLayout(8, 8));
 		JPanel top = new JPanel(new BorderLayout());
 		top.add(infoLabel, BorderLayout.WEST);
+		JPanel controls = new JPanel();
+		controls.add(leaveButton);
+		controls.add(rematchButton);
+		controls.add(backButton);
+		top.add(controls, BorderLayout.EAST);
 		add(top, BorderLayout.NORTH);
 		colorPanel.setBorder(BorderFactory.createTitledBorder("Ghi nhớ 3 màu"));
 		add(colorPanel, BorderLayout.CENTER);
@@ -44,6 +55,20 @@ public class GamePlayFrame extends JFrame implements MessageHandler.GameEventLis
 		bottom.add(submitButton, BorderLayout.SOUTH);
 		submitButton.setEnabled(false);
 		submitButton.addActionListener(e -> submitGuess());
+		leaveButton.addActionListener(e -> {
+			gameClient.leaveGame();
+			dispose();
+			if (mainFrame != null) mainFrame.returnFromGame();
+		});
+		rematchButton.addActionListener(e -> gameClient.requestRematch());
+		backButton.addActionListener(e -> {
+			if (gameEnded) {
+				dispose();
+				if (mainFrame != null) mainFrame.returnFromGame();
+			} else {
+				JOptionPane.showMessageDialog(this, "Bạn đang trong trận. Hãy dùng 'Rời trận'.");
+			}
+		});
 		add(bottom, BorderLayout.SOUTH);
 	}
 
@@ -81,9 +106,11 @@ public class GamePlayFrame extends JFrame implements MessageHandler.GameEventLis
 	}
 
 	// GameEventListener
-	@Override public void onGameStarted(Map<String, Object> gameData) { }
+	@Override public void onGameStarted(Map<String, Object> gameData) { gameEnded = false; }
 	@Override public void onGameEnded(String reason, Integer winnerId) {
-		JOptionPane.showMessageDialog(this, "Trận đấu kết thúc" + (winnerId != null ? (", winnerId=" + winnerId) : ", hòa"));
+		gameEnded = true;
+		String msg = "Trận đấu kết thúc" + (winnerId != null ? (", winnerId=" + winnerId) : ", hòa");
+		JOptionPane.showMessageDialog(this, msg + "\nBạn có thể yêu cầu 'Yêu cầu chơi lại' hoặc bấm 'Về màn chính'.");
 	}
 	@Override public void onShowColors(List<GameColor> colors, int duration, int roundNumber) {
 		this.roundNumber = roundNumber;
@@ -107,3 +134,4 @@ public class GamePlayFrame extends JFrame implements MessageHandler.GameEventLis
 		infoLabel.setText("Kết quả vòng " + roundNumber + ": tổng điểm = " + totalScore1 + " - " + totalScore2);
 	}
 }
+

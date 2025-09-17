@@ -145,3 +145,4 @@ INSERT INTO users (username, password, full_name, email, ranking_points) VALUES
 -- Cấp quyền cho user (điều chỉnh theo cấu hình MySQL của bạn)
 -- GRANT ALL PRIVILEGES ON color_guessing_game.* TO 'gameuser'@'localhost' IDENTIFIED BY 'gamepassword';
 -- FLUSH PRIVILEGES;
+

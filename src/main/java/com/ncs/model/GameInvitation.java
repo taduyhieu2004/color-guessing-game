@@ -227,3 +227,4 @@ public class GameInvitation {
                            id, inviterId, inviteeId, status, gameId);
     }
 }
+

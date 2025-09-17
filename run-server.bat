@@ -45,3 +45,4 @@ REM Chạy server
 mvn exec:java -Dexec.mainClass="com.ncs.server.GameServer" -Dexec.args="%PORT%"
 
 pause
+
