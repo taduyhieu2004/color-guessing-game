@@ -103,6 +103,16 @@ public class MessageHandler {
                     handleRoundResult(message);
                     break;
                 
+                // Rematch related
+                case Message.Actions.REQUEST_REMATCH:
+                    handleRematchRequest(message);
+                    break;
+                case Message.Actions.REMATCH_RESPONSE:
+                case Message.Actions.ACCEPT_REMATCH:
+                case Message.Actions.REJECT_REMATCH:
+                    handleRematchResponse(message);
+                    break;
+                
                 // System messages
                 case Message.Actions.ERROR:
                     handleError(message);
@@ -351,6 +361,29 @@ public class MessageHandler {
         }
     }
 
+    private void handleRematchRequest(Message message) {
+        if (gameEventListener != null) {
+            User fromUser = extractUser(message.getData(), "fromUser");
+            if (fromUser == null) {
+                fromUser = extractUser(message.getData(), "requester");
+            }
+            Integer timeout = (Integer) message.getData().get("timeout");
+            gameEventListener.onRematchRequested(fromUser, timeout);
+        }
+    }
+
+    private void handleRematchResponse(Message message) {
+        if (gameEventListener != null) {
+            String response = (String) message.getData().get("response");
+            User responder = extractUser(message.getData(), "responder");
+            if (responder == null) {
+                responder = extractUser(message.getData(), "accepter");
+                if (responder == null) responder = extractUser(message.getData(), "rejecter");
+            }
+            gameEventListener.onRematchResponse(response, responder);
+        }
+    }
+
     // System handlers
     
     private void handleError(Message message) {
@@ -472,6 +505,9 @@ public class MessageHandler {
         void onStartGuessing(java.util.List<com.ncs.model.GameColor> colorPalette, int duration, int roundNumber);
         void onRoundResult(Integer roundNumber, Boolean player1Correct, Boolean player2Correct, 
                           Integer winnerId, Double totalScore1, Double totalScore2);
+        // Rematch
+        void onRematchRequested(User fromUser, Integer timeoutMs);
+        void onRematchResponse(String response, User responder);
     }
 
     public interface UserListEventListener {
